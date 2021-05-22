@@ -1,0 +1,56 @@
+mouse = []
+men = []
+function player_in_mouse(player_name){
+    if (mouse.indexOf(player_name) !=-1){
+        return(false);
+    }
+    else{
+        return(true);
+    }
+};
+
+function mathRandomInt(a, b) {  
+    if (a > b) {
+        var c = a;    
+        var a = b;    
+        var b = c;  
+    }
+    return Math.floor(Math.random() * (b - a + 1) + a);
+}
+
+
+world.onPlayerJoin(({ entity }) => {
+    world.say('欢迎'+entity.player.name+'进入游戏！');
+    if (mathRandomInt(1, 2) == 1){
+        mouse.push(entity.player.name);
+        entity.enableDamage = true;
+        entity.player.team='老鼠'
+    }
+    else{
+        men.push(entity.player.name)
+        entity.enableDamage = false;
+        entity.player.team='农民'
+    }
+    entity.player.onPress(({ button, raycast:{ hitEntity, direction } }) => {
+        if (button !== 'action0' || !hitEntity) {
+            return;
+        }
+        hitEntity.hurt(, {100 attacker: entity,
+        });});
+        world.onDie(({ entity, attacker }) => {
+        if (attacker) {
+        world.say('农民：'+attacker.player.name + ' 抓住了老鼠：' + entity.player.name)
+        }
+        entity.player.forceRespawn();});
+});
+
+world.onPlayerleave(({ entity }) => {
+    world.say(entity.player.name+'离开了游戏'+entity.player.team+'队失去了一份力量');
+});
+
+world.querySelectorAll('.农民商店').forEach((e)=>{
+    
+})
+world.querySelectorAll('.老鼠商店').forEach((e)=>{
+    
+})
