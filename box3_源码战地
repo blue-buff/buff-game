@@ -1,0 +1,188 @@
+function mathRandomInt(a, b) {  
+    if (a > b) {
+        var c = a;    
+        var a = b;    
+        var b = c;  
+    }
+    return Math.floor(Math.random() * (b - a + 1) + a);
+}
+
+
+
+
+world.querySelectorAll('.空中载具').forEach((plane_1)=>{
+plane_1.enableInteract = true; // 允许进行互动
+plane_1.interactRadius = 7;   // 实体的互动范围
+plane_1.interactHint = '武装直升机「E」驾驶'; // 互动提示框显示实体的名称
+plane_1.interactColor = new Box3RGBColor(0,0,1);  // 互动提示的文字颜色
+
+// 玩家与实体进行交互时触发
+plane_1.onInteract(async({entity}) => {
+if(entity.dead==true){return} //防止非玩家实体参与检测.
+entity.player.cameraMode = 'fps';
+entity.mesh=plane_1.mesh; //设置玩家的外观.
+entity.meshScale=plane_1.meshScale; //设置玩家外观缩放比例.
+entity.player.invisible=true; //如果模型比玩家小,就需要隐藏玩家的皮肤.
+entity.player.canFly=true
+entity.maxHp=450
+entity.hp=plane_1.maxHp
+entity.player.gun='直升机机关枪'
+entity.player.athp=20
+plane_1.destroy()
+//如果模型比玩家小,就需要隐藏玩家的皮肤.
+})
+})
+for(i=0;i<2;i++){create_akm(mathRandomInt(177, 189),17.2,mathRandomInt(84, 91))}
+for(i=0;i<20;i++){create_akm(mathRandomInt(86, 90),33.2,mathRandomInt(10, 17))}
+
+// 面板移至后面(目前大约68行左右位置)
+
+world.onPlayerJoin(({ entity }) => {
+    world.say(`欢迎玩家 ${entity.player.name} 进入了源码战地！`);
+    entity.player.showName=false
+    entity.player.f_thing='拳头'
+    entity.player.s_ting='拳头'
+    entity.player.hurt_num=0
+    entity.player.b_gun=[]
+    entity.player.b_madhp=[]
+    entity.player.athp=8
+    entity.player.gun='拳头';
+    entity.enableDamage = true;
+    entity.player.onPress(async({ button, raycast:{ hitEntity, direction,distance,hitPosition} }) => {
+        ignoreFluid=true;
+        if (entity.player.dead==true) {return;} 
+        if(button == 'action0'){
+            if(entity.player.gun=='拳头'){
+                entity.sound('audio/hit.mp3')}
+            else{entity.sound('audio/gunshot.mp3')}
+            if(!hitEntity||hitEntity.isPlayer==false){return;}//||distance>entity.player.hurtDiastance
+            if(entity.hp===0||entity.player.spectator===true||hitEntity.hp===0||hitEntity.player.spectator===true)return;
+                hitEntity.velocity.x += direction.x;
+                hitEntity.velocity.y += 0.1;
+                hitEntity.velocity.z += direction.z;
+                hitEntity.hurt(entity.player.athp, {attacker: entity,});
+        }
+                
+                
+        });  
+    
+    })
+
+        
+
+
+            
+
+ //不懂别乱改
+/* world.onPlayerJoin(({entity}) => {
+    entity.player.addWearable({
+        bodyPart: Box3BodyPart.HEAD,
+        mesh: 'mesh/三级盔.vb',
+        orientation: new Box3Quaternion(0,1,0,0).rotateY(-Math.PI/2),
+        offset: new Box3Vector3(0,0.4,0.1),
+    });
+    entity.player.addWearable({
+        bodyPart: Box3BodyPart.RIGHT_HAND,
+        mesh: 'mesh/95式 [精美].vb',
+        orientation: new Box3Quaternion(0,1,0,0).rotateY(Math.PI),
+        offset: new Box3Vector3(-0.05,-0.1,0.5),
+        scale: Box3Vector3 = new Box3Vector3(0.3, 0.3, 0.3),
+    });
+});*/
+ //不懂别乱改
+ 
+ function create_akm(x,y,z) {
+const akm=world.createEntity({
+        mesh:'mesh/AKM突击步枪.vb',
+        position:new Box3Vector3(x,y,z),
+        meshScale:new Box3Vector3(0.035, 0.035, 0.035),
+        collides:false,
+        fixed:true,
+        gravity:true,
+    })
+akm.enableInteract = true; // 允许进行互动
+akm.interactRadius = 2;   // 实体的互动范围
+akm.interactHint = akm.id; // 互动提示框显示实体的名称
+akm.interactColor = new Box3RGBColor(1,0,1);  // 互动提示的文字颜色
+
+// 玩家与实体进行交互时触发
+akm.onInteract(async({entity}) => {
+    if(entity.player.dead==true){return}
+    entity.player.directMessage('已拾取AKM替换为主枪')
+    const akm_show= entity.player.addWearable({
+Part:Box3BodyPart.RIGH_HAND,
+mesh:'mesh/AKM突击步枪.vb',
+orientation:new Box3Quaternion(0,1,0,0).rotateZ(0).rotateY(0).rotateX(100),
+scale:new Box3Vector3(0.35,0.5,0.8),
+offset:new Box3Vector3(0.1,-0.6,0.3),
+});
+entity.player.onPress(async({ button }) => {
+    if(button=='action0'){
+        akm_show.orientation=new Box3Quaternion(0,1,0,0).rotateZ(0).rotateY(-30).rotateX(0) ;
+        akm_show.offset=new Box3Vector3(-0.35,-0.4,0.5)
+    }
+    
+})
+    if(entity.player.f_thing!='拳头'){
+        if(entity.player.f_thing=='AKM'){
+            create_akm(entity.position.x+Math.random()-0.5, entity.position.y-0.8, entity.position.z+Math.random()-0.5)
+        }
+    }
+    entity.player.gun='AKM'
+    entity.player.athp='18'
+    entity.player.f_thing='AKM';
+    entity.player.hurtDiastance = 50;
+    akm.destroy()
+});
+}
+
+
+
+world.onDie(({ entity, attacker }) => {
+    if (attacker) {
+    world.say(attacker.player.name + ' 使用 '+attacker.player.gun+' 淘汰了 ' + entity.player.name)
+    }
+    const you_dead = entity.player.dialog({
+        type: Box3DialogType.SELECT,
+        title: "系统提示",    // 对话框标题。通常对应是讲话人的名字。
+        titleTextColor: new Box3RGBAColor(0, 0, 0, 1), // 标题字体颜色。
+        titleBackgroundColor: new Box3RGBAColor(50, 0.702, 0.392, 1), // 标题背景颜色。
+        content: `你被淘汰了！剩余人数 人`, // 对话框内容。也就是对话正在讲什么。
+        options: ['确定'],   // 将提供玩家选择的选项放入数组里。
+        contentTextColor:  new Box3RGBAColor(0, 0, 0, 1),  // 对话框字体颜色。
+        contentBackgroundColor: new Box3RGBAColor(1, 1, 1, 1), // 对话框背景颜色。
+        lookEye: entity.position.add(entity.player.facingDirection.scale(3)), // 调整相机位置，摆在玩家朝向的前方5格距离。
+        lookTarget: entity,  // 将相机镜头朝向玩家实体。
+    });
+    world.createEntity({
+        mesh:'mesh/一滩血.vb',
+        position:new Box3Vector3(entity.position.x, entity.position.y-1, entity.position.z),
+        meshScale:new Box3Vector3(0.2, 0.2, 0.2),
+        collides:false,
+        fixed:true,
+        gravity:false,
+    })
+entity.sound('audio/death.mp3')
+ })
+    
+
+    world.querySelectorAll('.飞机').forEach((e)=>{
+        e.velocity.x=-0.5
+    })
+
+ //不懂别乱改
+
+// 防出界-ray
+world.querySelectorAll('.area_wall').forEach((e)=>{
+    // 隐藏,并可以碰撞
+    e.meshInvisible = true;
+    e.fixed = true;
+    e.collides = true;
+    e.onEntityContact(({other})=>{
+        other.player.directMessage('不要出界啦!');
+        other.velocity.y = 2;
+        other.velocity.x = -0.3;
+        other.velocity.z = -0.3;
+    })
+})
+require('./一个特效.js')
